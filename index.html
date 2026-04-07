@@ -54,7 +54,6 @@
             color: #1e293b;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* Hiệu ứng khi có dữ liệu quẹt thẻ */
         .is-active {
             border-color: #22c55e !important;
             background-color: #f0fdf4 !important;
@@ -86,27 +85,23 @@
             </div>
         </div>
 
-        <!-- Khung hiển thị Tên -->
         <div class="field-container">
             <span class="field-label text-blue-500">Họ và Tên</span>
             <div id="disp-name" class="field-content">---</div>
         </div>
 
-        <!-- Khung hiển thị MSSV -->
         <div class="field-container">
             <span class="field-label text-emerald-500">Mã số sinh viên</span>
             <div id="disp-mssv" class="field-content">---</div>
         </div>
 
-        <!-- Khung hiển thị Mã thẻ -->
         <div class="field-container">
             <span class="field-label text-orange-500">Mã Chip RFID</span>
             <div id="disp-rfid" class="field-content font-mono text-sm italic text-slate-400">---</div>
         </div>
 
-        <!-- Thông báo trạng thái dưới cùng -->
         <div class="mt-8 pt-6 border-t border-slate-50 flex flex-col items-center">
-            <div id="action-icon" class="mb-2 opacity-20">
+            <div id="action-icon" class="mb-2 opacity-20 transition-all duration-500">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
@@ -116,35 +111,34 @@
     </div>
 
     <script>
-        // Cấu hình Token từ thiết bị của bạn
         const TOKEN = "53f7b5a4-c19e-4760-9940-ff280ac07374";
-        // Sử dụng API v1 cho server Việt Nam
         const API = `https://vn.e-ra.io/v1/devices/data?token=${TOKEN}`;
 
         async function syncData() {
             try {
-                // Thêm timestamp để ép trình duyệt không lưu cache, luôn lấy dữ liệu mới nhất
-                const response = await fetch(`${API}&_t=${Date.now()}`);
+                // Thêm header để tránh cache tối đa
+                const response = await fetch(`${API}&_t=${Date.now()}`, {
+                    method: 'GET',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
+                
                 if (!response.ok) throw new Error("Offline");
                 
                 const results = await response.json();
                 
-                // Trích xuất dữ liệu từ các chân Virtual Pin (V0, V1, V2)
                 const uid = results.find(i => i.pin === 0)?.value || "---";
                 const name = results.find(i => i.pin === 1)?.value || "---";
                 const mssv = results.find(i => i.pin === 2)?.value || "---";
 
-                // Cập nhật nội dung vào các ô
                 document.getElementById('disp-name').innerText = name;
                 document.getElementById('disp-mssv').innerText = mssv;
                 document.getElementById('disp-rfid').innerText = uid;
 
-                // Cập nhật đèn trạng thái kết nối
                 document.getElementById('status-dot').className = "status-dot online";
                 document.getElementById('connection-text').innerText = "Cloud Việt Nam Online";
                 document.getElementById('connection-text').style.color = "#10b981";
 
-                // Kiểm tra xem có dữ liệu người dùng hay đang ở trạng thái chờ
+                // Kiểm tra xem có phải dữ liệu thật không
                 const isWaiting = (name === "---" || name === "Sẵn sàng" || name === "Waiting..." || name === "" || uid === "---");
 
                 const nameBox = document.getElementById('disp-name');
@@ -154,35 +148,31 @@
                 const icon = document.getElementById('action-icon');
 
                 if (!isWaiting) {
-                    // Trạng thái đã nhận thẻ
                     nameBox.classList.add('is-active');
                     mssvBox.classList.add('is-active');
                     rfidBox.classList.add('is-active');
                     msg.innerText = "Điểm danh thành công";
                     msg.className = "text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600";
                     icon.classList.remove('opacity-20');
-                    icon.classList.add('text-emerald-500');
+                    icon.style.color = "#10b981";
                 } else {
-                    // Trạng thái chờ
                     nameBox.classList.remove('is-active');
                     mssvBox.classList.remove('is-active');
                     rfidBox.classList.remove('is-active');
                     msg.innerText = "Sẵn sàng quẹt thẻ";
                     msg.className = "text-[11px] font-black uppercase tracking-[0.25em] text-slate-300 pulse-text";
                     icon.classList.add('opacity-20');
-                    icon.classList.remove('text-emerald-500');
+                    icon.style.color = "currentColor";
                 }
             } catch (err) {
-                // Xử lý khi mất mạng hoặc lỗi server
                 document.getElementById('status-dot').className = "status-dot offline";
                 document.getElementById('connection-text').innerText = "Mất kết nối Cloud";
                 document.getElementById('connection-text').style.color = "#ef4444";
             }
         }
 
-        // Tần suất quét: 1.5 giây một lần để cân bằng giữa tốc độ và hiệu năng
         setInterval(syncData, 1500);
-        syncData(); // Chạy lần đầu ngay khi tải trang
+        syncData();
     </script>
 </body>
 </html>
