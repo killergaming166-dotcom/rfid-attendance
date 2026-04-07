@@ -6,117 +6,183 @@
     <title>Hệ Thống Điểm Danh RFID</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background: transparent; overflow: hidden; }
-        .card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .pulse-green { animation: pulse-green 2s infinite; }
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-            70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #ffffff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
         }
+        .main-card {
+            width: 100%;
+            max-width: 480px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .field-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .field-label {
+            position: absolute;
+            top: -9px;
+            left: 12px;
+            background: white;
+            padding: 0 8px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            z-index: 10;
+        }
+        .field-content {
+            width: 100%;
+            border: 2px solid #f1f5f9;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            min-height: 62px;
+            display: flex;
+            align-items: center;
+            background: #fafafa;
+            color: #1e293b;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Hiệu ứng khi có dữ liệu quẹt thẻ */
+        .is-active {
+            border-color: #22c55e !important;
+            background-color: #f0fdf4 !important;
+            color: #15803d !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+        .status-dot.online { background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.6); }
+        .status-dot.offline { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+        
+        .pulse-text { animation: pulse-op 2s infinite; }
+        @keyframes pulse-op { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
+<body>
 
-    <div id="app" class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md card border border-gray-100">
+    <div class="main-card">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-600 tracking-tight">ĐIỂM DANH</h1>
-            <div id="connection-status" class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Đang kết nối Cloud...</div>
-        </div>
-
-        <div class="space-y-5">
-            <!-- Tên -->
-            <div class="bg-slate-50 p-4 rounded-2xl transition-all duration-500" id="box-name">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Họ và Tên</label>
-                <div id="display-name" class="text-2xl font-bold text-gray-800">---</div>
-            </div>
-
-            <!-- MSSV -->
-            <div class="bg-slate-50 p-4 rounded-2xl transition-all duration-500" id="box-mssv">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Mã Số Sinh Viên</label>
-                <div id="display-mssv" class="text-xl font-semibold text-gray-700">---</div>
-            </div>
-
-            <!-- Mã thẻ -->
-            <div class="bg-slate-50 p-4 rounded-2xl transition-all duration-500" id="box-rfid">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Mã Chip RFID</label>
-                <div id="display-rfid" class="text-sm font-mono text-gray-500">---</div>
+            <h1 class="text-4xl font-black italic tracking-tighter text-blue-600 uppercase">Điểm danh</h1>
+            <div class="flex items-center justify-center gap-2 mt-2">
+                <div id="status-dot" class="status-dot"></div>
+                <p id="connection-text" class="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">Đang kiểm tra Cloud...</p>
             </div>
         </div>
 
-        <div class="mt-10 flex flex-col items-center">
-            <div id="status-icon" class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-3 transition-all duration-500">
-                <svg id="icon-svg" class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        <!-- Khung hiển thị Tên -->
+        <div class="field-container">
+            <span class="field-label text-blue-500">Họ và Tên</span>
+            <div id="disp-name" class="field-content">---</div>
+        </div>
+
+        <!-- Khung hiển thị MSSV -->
+        <div class="field-container">
+            <span class="field-label text-emerald-500">Mã số sinh viên</span>
+            <div id="disp-mssv" class="field-content">---</div>
+        </div>
+
+        <!-- Khung hiển thị Mã thẻ -->
+        <div class="field-container">
+            <span class="field-label text-orange-500">Mã Chip RFID</span>
+            <div id="disp-rfid" class="field-content font-mono text-sm italic text-slate-400">---</div>
+        </div>
+
+        <!-- Thông báo trạng thái dưới cùng -->
+        <div class="mt-8 pt-6 border-t border-slate-50 flex flex-col items-center">
+            <div id="action-icon" class="mb-2 opacity-20">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
-            <span id="status-text" class="text-sm font-medium text-gray-400 animate-pulse">Vui lòng quẹt thẻ...</span>
+            <p id="status-msg" class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-300 pulse-text">Sẵn sàng quẹt thẻ</p>
         </div>
     </div>
 
     <script>
-        // CẤU HÌNH THÔNG TIN E-RA CỦA BẠN TẠI ĐÂY
-        const AUTH_TOKEN = "53f7b5a4-c19e-4760-9940-ff280ac07374";
-        const ERA_API_URL = `https://vn.e-ra.io/v1/devices/data?token=${AUTH_TOKEN}`;
+        // Cấu hình Token từ thiết bị của bạn
+        const TOKEN = "53f7b5a4-c19e-4760-9940-ff280ac07374";
+        // Sử dụng API v1 cho server Việt Nam
+        const API = `https://vn.e-ra.io/v1/devices/data?token=${TOKEN}`;
 
-        async function fetchData() {
+        async function syncData() {
             try {
-                const response = await fetch(ERA_API_URL);
-                const data = await response.json();
+                // Thêm timestamp để ép trình duyệt không lưu cache, luôn lấy dữ liệu mới nhất
+                const response = await fetch(`${API}&_t=${Date.now()}`);
+                if (!response.ok) throw new Error("Offline");
                 
-                // Giả sử dữ liệu trả về mảng các pin, ta tìm V0, V1, V2
-                // Cấu trúc API E-ra thường trả về object có chứa các giá trị Virtual Pin
-                const v0 = data.find(p => p.pin === 0)?.value || "---"; // Mã thẻ
-                const v1 = data.find(p => p.pin === 1)?.value || "---"; // Tên
-                const v2 = data.find(p => p.pin === 2)?.value || "---"; // MSSV
+                const results = await response.json();
+                
+                // Trích xuất dữ liệu từ các chân Virtual Pin (V0, V1, V2)
+                const uid = results.find(i => i.pin === 0)?.value || "---";
+                const name = results.find(i => i.pin === 1)?.value || "---";
+                const mssv = results.find(i => i.pin === 2)?.value || "---";
 
-                updateUI(v1, v2, v0);
-                document.getElementById('connection-status').innerText = "Cloud Connected";
-                document.getElementById('connection-status').classList.replace('text-gray-400', 'text-green-500');
-            } catch (error) {
-                console.error("Lỗi lấy dữ liệu:", error);
-                document.getElementById('connection-status').innerText = "Mất kết nối Cloud";
-                document.getElementById('connection-status').classList.replace('text-green-500', 'text-red-500');
+                // Cập nhật nội dung vào các ô
+                document.getElementById('disp-name').innerText = name;
+                document.getElementById('disp-mssv').innerText = mssv;
+                document.getElementById('disp-rfid').innerText = uid;
+
+                // Cập nhật đèn trạng thái kết nối
+                document.getElementById('status-dot').className = "status-dot online";
+                document.getElementById('connection-text').innerText = "Cloud Việt Nam Online";
+                document.getElementById('connection-text').style.color = "#10b981";
+
+                // Kiểm tra xem có dữ liệu người dùng hay đang ở trạng thái chờ
+                const isWaiting = (name === "---" || name === "Sẵn sàng" || name === "Waiting..." || name === "" || uid === "---");
+
+                const nameBox = document.getElementById('disp-name');
+                const mssvBox = document.getElementById('disp-mssv');
+                const rfidBox = document.getElementById('disp-rfid');
+                const msg = document.getElementById('status-msg');
+                const icon = document.getElementById('action-icon');
+
+                if (!isWaiting) {
+                    // Trạng thái đã nhận thẻ
+                    nameBox.classList.add('is-active');
+                    mssvBox.classList.add('is-active');
+                    rfidBox.classList.add('is-active');
+                    msg.innerText = "Điểm danh thành công";
+                    msg.className = "text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600";
+                    icon.classList.remove('opacity-20');
+                    icon.classList.add('text-emerald-500');
+                } else {
+                    // Trạng thái chờ
+                    nameBox.classList.remove('is-active');
+                    mssvBox.classList.remove('is-active');
+                    rfidBox.classList.remove('is-active');
+                    msg.innerText = "Sẵn sàng quẹt thẻ";
+                    msg.className = "text-[11px] font-black uppercase tracking-[0.25em] text-slate-300 pulse-text";
+                    icon.classList.add('opacity-20');
+                    icon.classList.remove('text-emerald-500');
+                }
+            } catch (err) {
+                // Xử lý khi mất mạng hoặc lỗi server
+                document.getElementById('status-dot').className = "status-dot offline";
+                document.getElementById('connection-text').innerText = "Mất kết nối Cloud";
+                document.getElementById('connection-text').style.color = "#ef4444";
             }
         }
 
-        function updateUI(name, mssv, rfid) {
-            const nameEl = document.getElementById('display-name');
-            const mssvEl = document.getElementById('display-mssv');
-            const rfidEl = document.getElementById('display-rfid');
-            const icon = document.getElementById('status-icon');
-            const iconSvg = document.getElementById('icon-svg');
-            const statusText = document.getElementById('status-text');
-            const appCard = document.getElementById('app');
-
-            nameEl.innerText = name;
-            mssvEl.innerText = mssv;
-            rfidEl.innerText = rfid;
-
-            if (name !== "---" && name !== "Sẵn sàng" && name !== "Waiting..." && rfid !== "---") {
-                // Trạng thái THÀNH CÔNG
-                icon.className = "w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-3 shadow-xl pulse-green";
-                iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
-                iconSvg.classList.replace('text-gray-300', 'text-white');
-                statusText.innerText = "XÁC NHẬN THÀNH CÔNG";
-                statusText.className = "text-sm font-bold text-green-600";
-                appCard.classList.add('border-green-200');
-            } else {
-                // Trạng thái CHỜ
-                icon.className = "w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-3";
-                iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
-                iconSvg.classList.add('text-gray-300');
-                statusText.innerText = "Vui lòng quẹt thẻ...";
-                statusText.className = "text-sm font-medium text-gray-400 animate-pulse";
-                appCard.classList.remove('border-green-200');
-            }
-        }
-
-        // Tự động cập nhật dữ liệu mỗi 2 giây
-        setInterval(fetchData, 2000);
-        // Chạy lần đầu ngay khi load trang
-        fetchData();
+        // Tần suất quét: 1.5 giây một lần để cân bằng giữa tốc độ và hiệu năng
+        setInterval(syncData, 1500);
+        syncData(); // Chạy lần đầu ngay khi tải trang
     </script>
 </body>
 </html>
