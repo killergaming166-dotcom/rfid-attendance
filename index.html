@@ -1,90 +1,70 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ERa Student Info</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ tạo mã điểm danh</title>
     <style>
-        body { background-color: #f8f9fa; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card { max-width: 500px; margin: auto; border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .card-header { background-color: #696cff; color: white; border-radius: 12px 12px 0 0 !important; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .form-label { font-weight: 600; color: #566a7f; }
-        .btn-save { background-color: #696cff; border: none; color: white; width: 100%; padding: 12px; font-weight: bold; border-radius: 8px; transition: 0.3s; margin-top: 10px; }
-        .btn-save:hover { background-color: #5f61e6; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(105, 108, 255, 0.4); }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f7f6; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #696cff; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; width: 100%; font-size: 16px; margin-bottom: 15px;}
+        button:hover { background-color: #5f61e6; }
+        .result-box { display: flex; gap: 10px; margin-top: 15px;}
+        .result-box input { margin: 0; background: #eef; font-weight: bold; color: #333;}
+        .btn-copy { background-color: #28a745; width: auto; white-space: nowrap;}
+        .btn-copy:hover { background-color: #218838; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="card-header text-center py-3">Nhập thông tin sinh viên</div>
-    <div class="card-body p-4">
-        <div class="mb-3">
-            <label class="form-label">Mã thẻ RFID</label>
-            <input type="text" id="maThe" class="form-control" placeholder="Quét thẻ hoặc nhập mã...">
+<div class="container">
+    <h3 style="text-align: center; color: #333;">TẠO MÃ GỬI XUỐNG ESP32</h3>
+    
+    <label>Mã thẻ:</label>
+    <input type="text" id="maThe" placeholder="Nhập mã thẻ...">
+
+    <label>Họ tên:</label>
+    <input type="text" id="hoTen" placeholder="Nhập họ tên...">
+
+    <label>Mã sinh viên:</label>
+    <input type="text" id="maSV" placeholder="Nhập mã SV...">
+
+    <label>Ca học:</label>
+    <input type="text" id="caHoc" placeholder="Nhập ca học...">
+
+    <button onclick="taoChuoi()">TẠO CHUỖI DỮ LIỆU</button>
+
+    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
+        <label>Chuỗi kết quả (Copy và dán vào ERa):</label>
+        <div class="result-box">
+            <input type="text" id="ketQua" readonly>
+            <button class="btn-copy" onclick="copyChuoi()">Copy</button>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Họ tên</label>
-            <input type="text" id="hoTen" class="form-control" placeholder="Ví dụ: Nguyễn Đình Danh">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Mã sinh viên</label>
-            <input type="text" id="maSV" class="form-control" placeholder="Ví dụ: SV123456">
-        </div>
-        <div class="mb-4">
-            <label class="form-label">Ca học</label>
-            <input type="text" id="caHoc" class="form-control" placeholder="Ví dụ: Ca sáng / Tiết 1-3">
-        </div>
-        <button id="btnSend" class="btn btn-save">LƯU VÀ GỬI XUỐNG THIẾT BỊ</button>
     </div>
 </div>
 
-<script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
 <script>
-    const eraWidget = new EraWidget();
-    let actionID = null;
+    function taoChuoi() {
+        const t1 = document.getElementById('maThe').value.trim();
+        const t2 = document.getElementById('hoTen').value.trim();
+        const t3 = document.getElementById('maSV').value.trim();
+        const t4 = document.getElementById('caHoc').value.trim();
 
-    eraWidget.init({
-        needActions: true,
-        onConfiguration: (config) => {
-            // Lấy ID của Action đầu tiên được cấu hình cho Iframe này trên Dashboard
-            if (config.actions && config.actions.length > 0) {
-                actionID = config.actions[0].action;
-            }
-        }
-    });
+        if(!t1 || !t2) { alert("Vui lòng nhập ít nhất Mã Thẻ và Họ Tên!"); return; }
+        
+        // Gộp chuỗi theo đúng format ESP32 đang chờ
+        const chuoi = `${t1}|${t2}|${t3}|${t4}`;
+        document.getElementById('ketQua').value = chuoi;
+    }
 
-    document.getElementById('btnSend').addEventListener('click', () => {
-        const maThe = document.getElementById('maThe').value.trim();
-        const hoTen = document.getElementById('hoTen').value.trim();
-        const maSV = document.getElementById('maSV').value.trim();
-        const caHoc = document.getElementById('caHoc').value.trim();
-
-        if (!maThe || !hoTen) {
-            alert("Vui lòng nhập ít nhất Mã thẻ và Họ tên!");
-            return;
-        }
-
-        // 1. Tạo chuỗi gộp tất cả thông tin lại
-        const dataStr = `${maThe}|${hoTen}|${maSV}|${caHoc}`;
-
-        if (actionID) {
-            // 2. GHI ĐÈ DỮ LIỆU: Bọc chuỗi vào Object { value: ... }
-            // Hành động này sẽ thay thế số 1 mà bạn bị ép nhập trên trang cấu hình Web
-            eraWidget.triggerAction(actionID, { value: dataStr });
-            
-            alert("Đã gửi thông tin: \n" + dataStr);
-            
-            // Tùy chọn: Xóa form sau khi gửi xong
-            // document.getElementById('maThe').value = '';
-            // document.getElementById('hoTen').value = '';
-            // document.getElementById('maSV').value = '';
-            // document.getElementById('caHoc').value = '';
-            
-        } else {
-            alert("Lỗi: Chưa cấu hình Action cho Iframe trên ERa Dashboard!");
-        }
-    });
+    function copyChuoi() {
+        const copyText = document.getElementById("ketQua");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Đã Copy: " + copyText.value);
+    }
 </script>
+
 </body>
 </html>
