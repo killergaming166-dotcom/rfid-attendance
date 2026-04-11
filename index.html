@@ -21,11 +21,11 @@
     <div class="card-body">
         <div class="mb-3">
             <label class="form-label">Mã thẻ</label>
-            <input type="text" id="maThe" class="form-control" placeholder="Quét thẻ RFID...">
+            <input type="text" id="maThe" class="form-control" placeholder="Quét thẻ RFID hoặc nhập mã...">
         </div>
         <div class="mb-3">
             <label class="form-label">Họ tên</label>
-            <input type="text" id="hoTen" class="form-control" placeholder="Ví dụ: Nguyễn Văn A">
+            <input type="text" id="hoTen" class="form-control" placeholder="Ví dụ: Nguyễn Đình Danh">
         </div>
         <div class="mb-3">
             <label class="form-label">Mã sinh viên</label>
@@ -61,7 +61,7 @@
         const caHoc = document.getElementById('caHoc').value;
 
         if (!maThe || !hoTen) {
-            alert("Vui lòng nhập Mã thẻ và Họ tên!");
+            alert("Vui lòng nhập ít nhất Mã thẻ và Họ tên!");
             return;
         }
 
@@ -69,10 +69,11 @@
         const dataStr = `${maThe}|${hoTen}|${maSV}|${caHoc}`;
 
         if (actionID) {
+            // Gửi dữ liệu qua Action đã cấu hình
             eraWidget.triggerAction(actionID, dataStr);
-            alert("Đã gửi thông tin!");
+            alert("Đã gửi thông tin thành công!");
         } else {
-            alert("Chưa cấu hình Action trên Dashboard ERa!");
+            alert("Lỗi: Chưa cấu hình Action cho Iframe trên ERa Dashboard!");
         }
     });
 </script>
