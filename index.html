@@ -1,70 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Công cụ tạo mã điểm danh</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Nút Nhấn Iframe</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f7f6; }
-        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #696cff; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; width: 100%; font-size: 16px; margin-bottom: 15px;}
-        button:hover { background-color: #5f61e6; }
-        .result-box { display: flex; gap: 10px; margin-top: 15px;}
-        .result-box input { margin: 0; background: #eef; font-weight: bold; color: #333;}
-        .btn-copy { background-color: #28a745; width: auto; white-space: nowrap;}
-        .btn-copy:hover { background-color: #218838; }
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f7f6; font-family: Arial, sans-serif; gap: 20px; }
+        button { padding: 15px 30px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #btnV7 { background-color: #28a745; } /* Nút xanh lá */
+        #btnV7:hover { background-color: #218838; }
+        #btnV8 { background-color: #007bff; } /* Nút xanh dương */
+        #btnV8:hover { background-color: #0069d9; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h3 style="text-align: center; color: #333;">TẠO MÃ GỬI XUỐNG ESP32</h3>
-    
-    <label>Mã thẻ:</label>
-    <input type="text" id="maThe" placeholder="Nhập mã thẻ...">
+    <button id="btnV7">TEST CHÂN V7</button>
+    <button id="btnV8">TEST CHÂN V8</button>
 
-    <label>Họ tên:</label>
-    <input type="text" id="hoTen" placeholder="Nhập họ tên...">
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+    <script>
+        const eraWidget = new EraWidget();
+        let actionV7 = null;
+        let actionV8 = null;
 
-    <label>Mã sinh viên:</label>
-    <input type="text" id="maSV" placeholder="Nhập mã SV...">
+        eraWidget.init({
+            needActions: true,
+            onConfiguration: (config) => {
+                // Kiểm tra xem đã cấu hình đủ 2 Action trên Web chưa
+                if (config.actions && config.actions.length >= 2) {
+                    actionV7 = config.actions[0].action; // Action thứ 1
+                    actionV8 = config.actions[1].action; // Action thứ 2
+                }
+            }
+        });
 
-    <label>Ca học:</label>
-    <input type="text" id="caHoc" placeholder="Nhập ca học...">
+        // Xử lý khi nhấn nút V7
+        document.getElementById('btnV7').addEventListener('click', () => {
+            if (actionV7) {
+                // Ghi đè dữ liệu gửi đi thành chuỗi "Hello V7!"
+                eraWidget.triggerAction(actionV7, { value: "Xin chao! Toi la nut V7 tu HTML." });
+            } else {
+                alert("Lỗi: Bạn chưa cấu hình Action thứ 1 (cho V7) trên Web!");
+            }
+        });
 
-    <button onclick="taoChuoi()">TẠO CHUỖI DỮ LIỆU</button>
-
-    <div style="border-top: 1px solid #ddd; padding-top: 15px;">
-        <label>Chuỗi kết quả (Copy và dán vào ERa):</label>
-        <div class="result-box">
-            <input type="text" id="ketQua" readonly>
-            <button class="btn-copy" onclick="copyChuoi()">Copy</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    function taoChuoi() {
-        const t1 = document.getElementById('maThe').value.trim();
-        const t2 = document.getElementById('hoTen').value.trim();
-        const t3 = document.getElementById('maSV').value.trim();
-        const t4 = document.getElementById('caHoc').value.trim();
-
-        if(!t1 || !t2) { alert("Vui lòng nhập ít nhất Mã Thẻ và Họ Tên!"); return; }
-        
-        // Gộp chuỗi theo đúng format ESP32 đang chờ
-        const chuoi = `${t1}|${t2}|${t3}|${t4}`;
-        document.getElementById('ketQua').value = chuoi;
-    }
-
-    function copyChuoi() {
-        const copyText = document.getElementById("ketQua");
-        copyText.select();
-        document.execCommand("copy");
-        alert("Đã Copy: " + copyText.value);
-    }
-</script>
-
+        // Xử lý khi nhấn nút V8
+        document.getElementById('btnV8').addEventListener('click', () => {
+            if (actionV8) {
+                // Ghi đè dữ liệu gửi đi thành chuỗi "Hello V8!"
+                eraWidget.triggerAction(actionV8, { value: "Xin chao! Toi la nut V8 tu HTML." });
+            } else {
+                alert("Lỗi: Bạn chưa cấu hình Action thứ 2 (cho V8) trên Web!");
+            }
+        });
+    </script>
 </body>
 </html>
