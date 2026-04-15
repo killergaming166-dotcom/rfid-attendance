@@ -3,98 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST BẮN LỆNH XUỐNG ESP32</title>
+    <title>TOOL TEST CHÂN V10</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 p-8 font-sans">
+<body class="bg-slate-100 flex items-center justify-center h-screen font-sans">
 
-    <div class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
-        <div class="text-center mb-6">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
-                <i class="fa-solid fa-rocket"></i>
-            </div>
-            <h2 class="text-2xl font-black text-slate-800">TEST NẠP THẺ</h2>
-            <p id="status-text" class="text-xs font-bold text-slate-400 mt-1">Đang chờ kết nối ERa...</p>
+    <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm text-center">
+        <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">
+            <i class="fa-solid fa-satellite-dish animate-pulse"></i>
         </div>
-
-        <div class="space-y-4">
-            <div>
-                <label class="text-xs font-bold text-slate-500 uppercase">Mã thẻ (UID)</label>
-                <input type="text" id="uid" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-blue-600 font-bold focus:border-blue-500 outline-none" placeholder="VD: 96576E05">
-            </div>
-            <div>
-                <label class="text-xs font-bold text-slate-500 uppercase">Họ và Tên</label>
-                <input type="text" id="name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-bold focus:border-blue-500 outline-none" placeholder="Nguyễn Văn A">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase">MSSV</label>
-                    <input type="text" id="mssv" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-bold focus:border-blue-500 outline-none" placeholder="PS12345">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase">Ca Học</label>
-                    <select id="shift" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-bold focus:border-blue-500 outline-none">
-                        <option value="Ca 1">Ca 1</option>
-                        <option value="Ca 2" selected>Ca 2</option>
-                        <option value="Ca 3">Ca 3</option>
-                    </select>
-                </div>
-            </div>
-
-            <button onclick="sendToESP32()" id="btn-send" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all mt-4 opacity-50 cursor-not-allowed" disabled>
-                <i class="fa-solid fa-paper-plane mr-2"></i> BẮN LỆNH XUỐNG ESP32
-            </button>
+        <h2 class="text-2xl font-black text-slate-800 mb-2 tracking-tight">TEST CHÂN V10</h2>
+        <p id="status-text" class="text-xs font-bold text-amber-500 mb-6 uppercase tracking-widest">Đang chờ kết nối ERa...</p>
+        
+        <div class="text-left mb-6">
+            <label class="text-[10px] font-black text-slate-500 uppercase mb-2 block tracking-wide">Nhập dữ liệu bất kỳ để test:</label>
+            <input type="text" id="test-data" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-slate-700 font-bold focus:border-orange-500 outline-none shadow-inner" placeholder="Nhập vào đây..." value="TEST_V10_XIN_CHAO">
         </div>
+        
+        <button id="btn-send" onclick="sendDataToV10()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 transition-all opacity-50 cursor-not-allowed uppercase" disabled>
+            <i class="fa-solid fa-paper-plane mr-2"></i> BẮN LÊN V10
+        </button>
     </div>
 
     <script>
         const eraWidget = new EraWidget();
-        let actionSendCard = null; // Biến lưu cấu hình Action
+        let targetAction = null;
 
         // Khởi tạo ERa Widget
         eraWidget.init({
             needActions: true,
             maxActionsCount: 5,
             onConfiguration: (config) => {
-                // Tự động tìm Action đầu tiên Sếp tạo trên Web
+                // Tự động tìm Action Sếp đã cấu hình trên Web
                 if (config.actions && config.actions.length > 0) {
-                    actionSendCard = config.actions[0].action; // Lấy mã Action
+                    targetAction = config.actions[0].action; 
                     
-                    document.getElementById('status-text').innerText = "ĐÃ KẾT NỐI - SẴN SÀNG BẮN LỆNH!";
-                    document.getElementById('status-text').className = "text-xs font-black text-emerald-500 mt-1";
+                    document.getElementById('status-text').innerText = "SẴN SÀNG TRUYỀN TẢI!";
+                    document.getElementById('status-text').className = "text-xs font-black text-emerald-500 mb-6 uppercase tracking-widest";
                     
                     const btn = document.getElementById('btn-send');
                     btn.disabled = false;
                     btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 } else {
-                    document.getElementById('status-text').innerText = "LỖI: Chưa tạo Action trên ERa Dashboard!";
-                    document.getElementById('status-text').className = "text-xs font-black text-rose-500 mt-1";
+                    document.getElementById('status-text').innerText = "LỖI: CHƯA CÓ ACTION NÀO TRÊN ERA!";
+                    document.getElementById('status-text').className = "text-xs font-black text-rose-500 mb-6 uppercase tracking-widest";
                 }
             }
         });
 
-        // Hàm xử lý khi bấm nút
-        function sendToESP32() {
-            const u = document.getElementById('uid').value.trim();
-            const n = document.getElementById('name').value.trim();
-            const m = document.getElementById('mssv').value.trim();
-            const s = document.getElementById('shift').value;
-
-            if(!u || !n || !m) {
-                alert("Vui lòng điền đủ thông tin!");
+        // Hàm xử lý bắn dữ liệu
+        function sendDataToV10() {
+            const dataValue = document.getElementById('test-data').value.trim();
+            
+            if(!dataValue) {
+                alert("Vui lòng nhập dữ liệu để test!");
                 return;
             }
 
-            // Gộp thành chuỗi chuẩn
-            const payloadString = `${u}|${n}|${m}|${s}`;
-            
-            // DÙNG LỆNH CỦA SẾP TÌM HIỂU ĐỂ BẮN THẲNG XUỐNG MẠCH
-            if (actionSendCard) {
-                eraWidget.triggerAction(actionSendCard, null, { value: payloadString });
+            if (targetAction) {
+                // Lệnh cốt lõi: Bắn dữ liệu (value) vào Action tương ứng
+                eraWidget.triggerAction(targetAction, null, { value: dataValue });
                 
-                alert("Đã bắn lệnh xuống ESP32:\n" + payloadString);
+                // Xóa ô nhập sau khi gửi để dễ nhìn
+                document.getElementById('test-data').value = "";
+                document.getElementById('test-data').placeholder = "Đã gửi: " + dataValue;
             }
         }
     </script>
